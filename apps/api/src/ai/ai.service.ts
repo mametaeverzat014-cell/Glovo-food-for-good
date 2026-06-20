@@ -24,6 +24,7 @@ to reduce waste. Given a short note about what a kitchen has left over, you writ
 honest offer and suggest a fair discount.
 
 Rules:
+- WRITE THE "title", "description" AND "reason" IN RUSSIAN.
 - Titles are short (max 6 words), warm and appetising. No ALL CAPS, no emoji spam (one tasteful emoji ok).
 - Descriptions are 1-2 friendly, mouth-watering sentences a hungry customer would want to read.
 - Suggested discount is one of 30, 50, or 70 (percent). Bigger discount when there is a lot left or
@@ -128,7 +129,7 @@ export class AiService {
       description: String(parsed.description ?? '').trim() || this.builtin(input).description,
       suggestedDiscountPercent: pct,
       suggestedDiscountedPrice: this.discounted(input.originalPrice, pct),
-      reason: String(parsed.reason ?? '').trim() || 'Suggested by AI.',
+      reason: String(parsed.reason ?? '').trim() || 'Предложено ИИ.',
       source: 'llm',
     };
   }
@@ -137,41 +138,32 @@ export class AiService {
 
   private builtin(input: OfferSuggestionInput): OfferSuggestion {
     const item = this.cleanItem(input.surplus);
-    const cat = (input.category ?? 'OTHER').toUpperCase();
 
     const titleTemplates = [
-      `${item} Rescue Box`,
-      `Save our ${item}`,
-      `${item} — last call`,
-      `End-of-day ${item}`,
-      `${item} surprise bag`,
+      `${item} — спасём вместе`,
+      `Бокс «${item}»`,
+      `${item}: последний шанс`,
+      `${item} в конце дня`,
+      `Сюрприз-бокс «${item}»`,
     ];
-
-    const adjectives: Record<string, string[]> = {
-      BAKERY: ['freshly baked', 'golden', 'still-warm', 'oven-fresh'],
-      DESSERTS: ['sweet', 'indulgent', 'irresistible', 'melt-in-your-mouth'],
-      MEALS: ['hearty', 'home-style', 'freshly made', 'satisfying'],
-      DRINKS: ['refreshing', 'chilled', 'house-made', 'thirst-quenching'],
-      GROCERY: ['fresh', 'quality', 'hand-picked', 'good-as-new'],
-      OTHER: ['delicious', 'lovingly made', 'too-good-to-waste', 'tasty'],
-    };
-    const adj = pick(adjectives[cat] ?? adjectives.OTHER);
 
     const closing =
       input.hoursUntilClose != null && input.hoursUntilClose <= 1
-        ? 'We close very soon, so grab it now'
-        : 'Pick it up before we close tonight';
+        ? 'Закрываемся совсем скоро, успейте забрать'
+        : 'Заберите до закрытия сегодня вечером';
 
+    // Phrased to avoid Russian adjective/gender agreement with the item name.
     const descTemplates = [
-      `Our ${adj} ${item.toLowerCase()} is still wonderful and looking for a good home. ${closing} and enjoy it for a fraction of the price. ♻️`,
-      `${this.capitalize(adj)} ${item.toLowerCase()}, made today and far too good to waste. ${closing} and save big while helping the planet.`,
-      `Rescue this ${adj} ${item.toLowerCase()} tonight — same great taste, a much smaller price. ${closing}.`,
+      `«${item}» — на вкус как только что с кухни, и уже ищет, кому достаться. ${closing} и заберите за часть цены. ♻️`,
+      `Сегодня осталось: «${item}». Слишком вкусно, чтобы пропасть! ${closing} и сэкономьте, помогая планете.`,
+      `Спасите «${item}» сегодня — тот же вкус, а цена куда приятнее. ${closing}.`,
+      `Немного «${item}» осталось в конце дня. ${closing} и заберите со скидкой — еда не должна оказаться в мусоре.`,
     ];
 
     const { pct, reason } = this.suggestDiscount(input);
 
     return {
-      title: this.trimWords(pick(titleTemplates), 6),
+      title: this.trimWords(pick(titleTemplates), 7),
       description: pick(descTemplates),
       suggestedDiscountPercent: pct,
       suggestedDiscountedPrice: this.discounted(input.originalPrice, pct),
@@ -184,12 +176,12 @@ export class AiService {
     const qty = input.quantity ?? 0;
     const hours = input.hoursUntilClose ?? 3;
     if (qty >= 10 || hours <= 1) {
-      return { pct: 70, reason: 'Lots to move or closing soon — a generous discount.' };
+      return { pct: 70, reason: 'Осталось много или скоро закрытие — щедрая скидка.' };
     }
     if (qty >= 4 || hours <= 2) {
-      return { pct: 50, reason: 'A fair half-price deal to clear today’s surplus.' };
+      return { pct: 50, reason: 'Честная скидка вдвое, чтобы разобрать остатки за день.' };
     }
-    return { pct: 30, reason: 'Only a little left, so a gentle discount.' };
+    return { pct: 30, reason: 'Осталось немного, поэтому небольшая скидка.' };
   }
 
   // --- helpers -------------------------------------------------------------
@@ -198,10 +190,11 @@ export class AiService {
     const cleaned = surplus
       .replace(/[0-9]+/g, ' ')
       .replace(/\b(a|an|the|few|some|several|left|leftover|pieces?|portions?|of|and)\b/gi, ' ')
+      .replace(/\b(несколько|немного|пара|остатки|остаток|штук|штуки|порц\w*|шт|и|ещё|еще)\b/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
     const words = (cleaned || surplus).split(' ').filter(Boolean).slice(0, 4);
-    return this.capitalize(words.join(' ')) || 'Surprise box';
+    return this.capitalize(words.join(' ')) || 'Сюрприз-бокс';
   }
 
   private trimWords(text: string, max: number): string {
