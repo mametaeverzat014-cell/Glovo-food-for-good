@@ -14,6 +14,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from '../payments/stripe.service';
+import { EventsGateway } from '../events/events.gateway';
 import { CreateOrderDto } from './dto/order.dto';
 
 /** Generates a short human-readable pickup code (e.g. "FS-4827"). */
@@ -27,6 +28,7 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly stripe: StripeService,
     private readonly config: ConfigService,
+    private readonly events: EventsGateway,
   ) {}
 
   private webUrl(): string {
@@ -114,7 +116,7 @@ export class OrdersService {
   async reserve(userId: string, dto: CreateOrderDto) {
     const quantity = dto.quantity ?? 1;
 
-    return this.prisma.$transaction(async (tx) => {
+    const order = await this.prisma.$transaction(async (tx) => {
       const offer = await tx.offer.findUnique({ where: { id: dto.offerId } });
       if (!offer) {
         throw new NotFoundException('Offer not found');
@@ -158,6 +160,9 @@ export class OrdersService {
 
       return order;
     });
+
+    this.events.emitOffersChanged({ offerId: dto.offerId });
+    return order;
   }
 
   findMine(userId: string) {
@@ -249,7 +254,7 @@ export class OrdersService {
 
   /** Cancel a RESERVED/PAID order and return stock to the offer. */
   async cancel(id: string, userId: string) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.findUnique({ where: { id } });
       if (!order || order.userId !== userId) {
         throw new NotFoundException('Order not found');
@@ -277,6 +282,9 @@ export class OrdersService {
         },
       });
     });
+
+    this.events.emitOffersChanged({ offerId: result.offerId });
+    return result;
   }
 
   private async getOwnOrder(id: string, userId: string) {

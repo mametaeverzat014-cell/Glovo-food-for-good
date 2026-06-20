@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { OfferStatus, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { EventsGateway } from '../events/events.gateway';
 import { distanceKm } from '../common/geo';
 import { CreateOfferDto, FeedQueryDto, UpdateOfferDto } from './dto/offer.dto';
 
@@ -22,7 +23,10 @@ function withDiscount<T extends { originalPrice: Prisma.Decimal; discountedPrice
 
 @Injectable()
 export class OffersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: EventsGateway,
+  ) {}
 
   async create(user: { id: string; role: Role }, dto: CreateOfferDto) {
     const restaurant = await this.prisma.restaurant.findUnique({
@@ -56,6 +60,7 @@ export class OffersService {
         images: dto.images ?? [],
       },
     });
+    this.events.emitOffersChanged({ restaurantId: dto.restaurantId, offerId: offer.id });
     return withDiscount(offer);
   }
 
@@ -209,12 +214,14 @@ export class OffersService {
     }
 
     const updated = await this.prisma.offer.update({ where: { id }, data });
+    this.events.emitOffersChanged({ restaurantId: updated.restaurantId, offerId: id });
     return withDiscount(updated);
   }
 
   async remove(id: string, user: { id: string; role: Role }) {
-    await this.assertOwnership(id, user);
+    const offer = await this.assertOwnership(id, user);
     await this.prisma.offer.delete({ where: { id } });
+    this.events.emitOffersChanged({ restaurantId: offer.restaurantId, offerId: id });
     return { success: true };
   }
 
