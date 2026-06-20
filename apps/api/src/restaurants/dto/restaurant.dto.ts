@@ -4,7 +4,6 @@ import {
   IsLongitude,
   IsOptional,
   IsString,
-  IsUrl,
   MinLength,
 } from 'class-validator';
 
@@ -30,7 +29,7 @@ export class CreateRestaurantDto {
   lng!: number;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
   imageUrl?: string;
 }
 
@@ -60,6 +59,6 @@ export class UpdateRestaurantDto {
   lng?: number;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
   imageUrl?: string;
 }

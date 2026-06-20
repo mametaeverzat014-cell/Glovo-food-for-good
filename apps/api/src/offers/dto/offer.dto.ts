@@ -9,7 +9,6 @@ import {
   IsOptional,
   IsPositive,
   IsString,
-  IsUrl,
   Min,
   MinLength,
 } from 'class-validator';
@@ -58,7 +57,7 @@ export class CreateOfferDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(5)
-  @IsUrl({}, { each: true })
+  @IsString({ each: true })
   images?: string[];
 }
 

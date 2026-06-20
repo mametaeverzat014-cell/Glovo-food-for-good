@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import type { FoodCategory, Offer } from '@/lib/types';
+import { ImageUpload } from './ImageUpload';
 
 const CATEGORIES: FoodCategory[] = ['MEALS', 'BAKERY', 'GROCERY', 'DESSERTS', 'DRINKS', 'OTHER'];
 
@@ -27,6 +28,7 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
     pickupInHours: '2',
     windowHours: '3',
   });
+  const [image, setImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
@@ -46,11 +48,13 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
           pickupStart,
           pickupEnd,
           expiresAt: pickupEnd,
+          images: image ? [image] : undefined,
         },
       });
     },
     onSuccess: () => {
       setForm((f) => ({ ...f, title: '', description: '', originalPrice: '', discountedPrice: '' }));
+      setImage(null);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['restaurant-offers', restaurantId] });
     },
@@ -70,6 +74,8 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
     >
       <p className="eyebrow">New surplus offer</p>
       {error && <p className="rounded-xl bg-clay/10 px-3 py-2 text-xs text-clay">{error}</p>}
+
+      <ImageUpload value={image} onChange={setImage} label="Dish photo" />
 
       <input
         placeholder="Title"

@@ -41,7 +41,16 @@ export function RestaurantPanel({ restaurant }: { restaurant: Restaurant }) {
   return (
     <div className="rounded-4xl border border-line bg-cream p-8">
       <div className="mb-6 flex items-start justify-between gap-4 border-b border-line pb-6">
-        <div>
+        <div className="flex items-start gap-4">
+          {restaurant.imageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={restaurant.imageUrl}
+              alt={restaurant.name}
+              className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+            />
+          )}
+          <div>
           <h3 className="font-display text-2xl font-medium text-ink">{restaurant.name}</h3>
           <p className="mt-1 text-sm text-muted">{restaurant.address}</p>
           <span
@@ -51,6 +60,7 @@ export function RestaurantPanel({ restaurant }: { restaurant: Restaurant }) {
           >
             {restaurant.verified ? '✓ Verified' : 'Pending verification'}
           </span>
+          </div>
         </div>
         <div className="text-right">
           <p className="font-display text-2xl font-semibold text-ink">

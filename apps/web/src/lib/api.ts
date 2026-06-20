@@ -72,3 +72,22 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   }
   return res.json() as Promise<T>;
 }
+
+/** Upload an image blob and return its public URL on the API. */
+export async function uploadImage(file: Blob): Promise<{ id: string; url: string }> {
+  const form = new FormData();
+  form.append('file', file, 'photo.jpg');
+
+  const token = getToken();
+  const res = await fetch(`${API_URL}/uploads`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: form,
+  });
+
+  if (!res.ok) {
+    throw new ApiError('Image upload failed', res.status);
+  }
+  const { id } = (await res.json()) as { id: string };
+  return { id, url: `${API_URL}/uploads/${id}` };
+}

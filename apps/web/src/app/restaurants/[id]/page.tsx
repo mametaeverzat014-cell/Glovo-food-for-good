@@ -49,7 +49,16 @@ export default function RestaurantDetailPage() {
         </Link>
 
         <div className="mt-6 flex flex-col justify-between gap-6 border-b border-line pb-10 sm:flex-row sm:items-end">
-          <div>
+          <div className="flex items-start gap-6">
+            {restaurant.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={restaurant.imageUrl}
+                alt={restaurant.name}
+                className="h-24 w-24 shrink-0 rounded-3xl object-cover sm:h-28 sm:w-28"
+              />
+            )}
+            <div>
             {restaurant.verified && (
               <span className="eyebrow text-olive">✓ Verified partner</span>
             )}
@@ -60,6 +69,7 @@ export default function RestaurantDetailPage() {
             {restaurant.description && (
               <p className="mt-4 max-w-prose leading-relaxed text-cocoa">{restaurant.description}</p>
             )}
+            </div>
           </div>
           <div className="text-right">
             <p className="font-display text-5xl font-semibold text-ink">

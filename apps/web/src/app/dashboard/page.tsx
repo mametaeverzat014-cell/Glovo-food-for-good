@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/api';
 import type { Restaurant } from '@/lib/types';
 import { useAuth } from '@/store/auth';
 import { RestaurantPanel } from '@/components/RestaurantPanel';
+import { ImageUpload } from '@/components/ImageUpload';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', address: '', lat: '51.1283', lng: '71.4304' });
+  const [image, setImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,11 +39,13 @@ export default function DashboardPage() {
           address: form.address,
           lat: Number(form.lat),
           lng: Number(form.lng),
+          imageUrl: image ?? undefined,
         },
       }),
     onSuccess: () => {
       setShowForm(false);
       setForm({ name: '', address: '', lat: '51.1283', lng: '71.4304' });
+      setImage(null);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['my-restaurants'] });
     },
@@ -76,6 +80,9 @@ export default function DashboardPage() {
           className="mt-8 space-y-3 rounded-4xl border border-line bg-cream p-8"
         >
           {error && <p className="rounded-2xl bg-clay/10 px-4 py-3 text-sm text-clay">{error}</p>}
+          <div className="max-w-xs">
+            <ImageUpload value={image} onChange={setImage} label="Restaurant photo" />
+          </div>
           <input
             placeholder="Restaurant name"
             required
