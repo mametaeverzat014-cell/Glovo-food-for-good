@@ -27,6 +27,9 @@ services:
       # Stripe test secret key (sk_test_...) from dashboard.stripe.com/test/apikeys
       - key: STRIPE_SECRET_KEY
         sync: false
+      # Claude API key for the AI offer assistant (console.anthropic.com)
+      - key: ANTHROPIC_API_KEY
+        sync: false
 
 databases:
   - name: foodsave-db

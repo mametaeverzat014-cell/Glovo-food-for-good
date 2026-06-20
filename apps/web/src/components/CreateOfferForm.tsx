@@ -30,6 +30,44 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
   });
   const [image, setImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiHint, setAiHint] = useState<string | null>(null);
+
+  interface Suggestion {
+    title: string;
+    description: string;
+    suggestedDiscountPercent: number;
+    suggestedDiscountedPrice?: number;
+    reason: string;
+  }
+
+  const assist = useMutation({
+    mutationFn: () =>
+      apiFetch<Suggestion>('/offers/assist', {
+        method: 'POST',
+        body: {
+          surplus: aiPrompt,
+          category: form.category,
+          originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
+          quantity: form.quantity ? Number(form.quantity) : undefined,
+          hoursUntilClose: form.pickupInHours ? Number(form.pickupInHours) : undefined,
+        },
+      }),
+    onSuccess: (s) => {
+      const original = Number(form.originalPrice);
+      const price =
+        s.suggestedDiscountedPrice ??
+        (original ? Math.round(original * (1 - s.suggestedDiscountPercent / 100)) : undefined);
+      setForm((f) => ({
+        ...f,
+        title: s.title,
+        description: s.description,
+        discountedPrice: price != null ? String(price) : f.discountedPrice,
+      }));
+      setAiHint(`${s.reason} (suggested −${s.suggestedDiscountPercent}%)`);
+    },
+    onError: (e) => setAiHint(e instanceof Error ? e.message : 'AI is unavailable right now'),
+  });
 
   const create = useMutation({
     mutationFn: () => {
@@ -74,6 +112,29 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
     >
       <p className="eyebrow">New surplus offer</p>
       {error && <p className="rounded-xl bg-clay/10 px-3 py-2 text-xs text-clay">{error}</p>}
+
+      {/* AI assistant */}
+      <div className="space-y-2 rounded-2xl border border-dashed border-olive/40 bg-olive/5 p-3">
+        <p className="text-[11px] font-medium uppercase tracking-wider text-olive">
+          ✨ AI assistant
+        </p>
+        <textarea
+          value={aiPrompt}
+          onChange={(e) => setAiPrompt(e.target.value)}
+          placeholder="What's left? e.g. 20 croissants and a few cakes, closing in 2h"
+          rows={2}
+          className={inputClass}
+        />
+        <button
+          type="button"
+          onClick={() => aiPrompt.trim().length >= 3 && assist.mutate()}
+          disabled={assist.isPending || aiPrompt.trim().length < 3}
+          className="btn-pill w-full bg-olive py-2 text-xs text-cream hover:opacity-90 disabled:opacity-50"
+        >
+          {assist.isPending ? 'Thinking…' : 'Generate title, description & discount'}
+        </button>
+        {aiHint && <p className="text-[11px] leading-snug text-cocoa">{aiHint}</p>}
+      </div>
 
       <ImageUpload value={image} onChange={setImage} label="Dish photo" />
 

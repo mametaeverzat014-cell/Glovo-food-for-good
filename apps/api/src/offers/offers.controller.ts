@@ -15,12 +15,17 @@ import { Public } from '../auth/public.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { CreateOfferDto, FeedQueryDto, UpdateOfferDto } from './dto/offer.dto';
+import { AssistOfferDto } from './dto/assist.dto';
 import { OffersService } from './offers.service';
+import { AiService } from '../ai/ai.service';
 
 @Controller('offers')
 @UseGuards(RolesGuard)
 export class OffersController {
-  constructor(private readonly offers: OffersService) {}
+  constructor(
+    private readonly offers: OffersService,
+    private readonly ai: AiService,
+  ) {}
 
   // Public marketplace feed with filters + sorting.
   @Public()
@@ -45,6 +50,13 @@ export class OffersController {
   @Get('restaurant/:restaurantId')
   findByRestaurant(@Param('restaurantId') restaurantId: string) {
     return this.offers.findByRestaurant(restaurantId);
+  }
+
+  // AI assistant: draft an appetising title/description + suggested discount.
+  @Post('assist')
+  @Roles(Role.RESTAURANT_OWNER, Role.ADMIN)
+  assist(@Body() dto: AssistOfferDto) {
+    return this.ai.suggestOffer(dto);
   }
 
   @Post()
