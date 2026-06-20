@@ -27,11 +27,12 @@ services:
       # Stripe test secret key (sk_test_...) from dashboard.stripe.com/test/apikeys
       - key: STRIPE_SECRET_KEY
         sync: false
-      # xAI (Grok) API key for the AI offer assistant (console.x.ai)
-      - key: XAI_API_KEY
+      # AI offer assistant works with no key (built-in generator). Optional:
+      # add a FREE Groq key (console.groq.com) for LLM-quality copy.
+      - key: GROQ_API_KEY
         sync: false
-      - key: XAI_MODEL
-        value: grok-3
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
 
 databases:
   - name: foodsave-db
