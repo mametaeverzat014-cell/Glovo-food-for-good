@@ -4,11 +4,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import type { Offer, Order, Restaurant } from '@/lib/types';
-import { formatPrice } from '@/lib/format';
 import { CreateOfferForm } from './CreateOfferForm';
 import { ImageUpload } from './ImageUpload';
 import { AddressAutocomplete, type GeoResult } from './AddressAutocomplete';
 import { RestaurantAnalytics } from './RestaurantAnalytics';
+import { OfferRow } from './OfferRow';
 
 const ACTIVE_STATUSES = ['RESERVED', 'PAID', 'PICKED_UP'];
 
@@ -187,20 +187,7 @@ export function RestaurantPanel({ restaurant }: { restaurant: Restaurant }) {
           ) : (
             <ul className="space-y-2">
               {offers.map((offer) => (
-                <li
-                  key={offer.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-paper px-4 py-3 text-sm"
-                >
-                  <span className="text-ink">
-                    {offer.title}{' '}
-                    <span className="text-[11px] uppercase tracking-wider text-muted">
-                      · {offer.status}
-                    </span>
-                  </span>
-                  <span className="whitespace-nowrap text-cocoa">
-                    {formatPrice(offer.discountedPrice)} · {offer.quantity} left
-                  </span>
-                </li>
+                <OfferRow key={offer.id} offer={offer} restaurantId={restaurant.id} />
               ))}
             </ul>
           )}
