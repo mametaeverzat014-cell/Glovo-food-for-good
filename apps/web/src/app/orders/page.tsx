@@ -8,6 +8,7 @@ import type { Order } from '@/lib/types';
 import { formatPrice } from '@/lib/format';
 import { useAuth } from '@/store/auth';
 import { ReviewForm } from '@/components/ReviewForm';
+import { PickupQR } from '@/components/PickupQR';
 
 const STATUS_STYLES: Record<string, string> = {
   RESERVED: 'bg-clay/15 text-clay',
@@ -126,13 +127,6 @@ export default function OrdersPage() {
                     Confirm received
                   </button>
                 )}
-                {order.status === 'PAID' && (
-                  <p className="text-sm text-muted">
-                    Show code{' '}
-                    <span className="font-display font-semibold text-ink">{order.pickupCode}</span>{' '}
-                    at pickup.
-                  </p>
-                )}
                 {order.status === 'COMPLETED' &&
                   order.offer?.restaurantId &&
                   (reviewedRestaurants.has(order.offer.restaurantId) ? (
@@ -146,6 +140,10 @@ export default function OrdersPage() {
                     </button>
                   ) : null)}
               </div>
+
+              {(order.status === 'PAID' || order.status === 'PICKED_UP') && (
+                <PickupQR code={order.pickupCode} />
+              )}
 
               {order.status === 'COMPLETED' &&
                 reviewingOrder === order.id &&
