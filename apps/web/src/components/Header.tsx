@@ -6,7 +6,7 @@ import { useAuth } from '@/store/auth';
 
 const NAV = [
   { href: '/', label: 'Marketplace' },
-  { href: '/#how', label: 'How it works' },
+  { href: '/map', label: 'Map' },
   { href: '/#impact', label: 'Impact' },
 ];
 
