@@ -16,6 +16,13 @@ export class OrdersController {
     return this.orders.findMine(user.id);
   }
 
+  // Orders for a restaurant the current user owns (pickup management).
+  @Get('restaurant/:restaurantId')
+  @Roles(Role.RESTAURANT_OWNER, Role.ADMIN)
+  findForRestaurant(@Param('restaurantId') restaurantId: string, @CurrentUser() user: AuthUser) {
+    return this.orders.findForRestaurant(restaurantId, user);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.orders.findOne(id, user);

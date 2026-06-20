@@ -75,7 +75,8 @@ export interface Order {
   paymentStatus: 'PENDING' | 'PAID' | 'REFUNDED';
   pickupCode: string;
   createdAt: string;
-  offer?: Offer & { restaurant?: { name: string; address: string } };
+  offer?: Partial<Offer> & { restaurant?: { name: string; address: string } };
+  user?: { name: string };
 }
 
 export interface FeedFilters {

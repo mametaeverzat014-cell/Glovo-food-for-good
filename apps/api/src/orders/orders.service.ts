@@ -168,6 +168,25 @@ export class OrdersService {
     });
   }
 
+  /** Orders placed against a restaurant's offers (owner pickup view). */
+  async findForRestaurant(restaurantId: string, user: { id: string; role: Role }) {
+    const restaurant = await this.prisma.restaurant.findUnique({ where: { id: restaurantId } });
+    if (!restaurant) {
+      throw new NotFoundException('Restaurant not found');
+    }
+    if (user.role !== Role.ADMIN && restaurant.ownerId !== user.id) {
+      throw new ForbiddenException('You do not own this restaurant');
+    }
+    return this.prisma.order.findMany({
+      where: { offer: { restaurantId } },
+      include: {
+        offer: { select: { title: true } },
+        user: { select: { name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findOne(id: string, user: { id: string; role: Role }) {
     const order = await this.prisma.order.findUnique({
       where: { id },
