@@ -48,15 +48,20 @@ export default function DashboardPage() {
     onError: (e) => setError(e instanceof Error ? e.message : 'Could not create restaurant'),
   });
 
-  if (isLoading) return <p className="py-12 text-center text-slate-400">Loading dashboard…</p>;
+  if (isLoading) return <p className="py-32 text-center text-muted">Loading dashboard…</p>;
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Restaurant Dashboard</h1>
+    <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
+      <div className="flex flex-col justify-between gap-6 border-b border-line pb-8 sm:flex-row sm:items-end">
+        <div>
+          <p className="eyebrow">Partner dashboard</p>
+          <h1 className="mt-3 font-display text-5xl font-medium tracking-tight text-ink">
+            Your kitchens
+          </h1>
+        </div>
         <button
           onClick={() => setShowForm((s) => !s)}
-          className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark"
+          className="btn-pill bg-ink px-6 py-3 text-cream hover:bg-espresso"
         >
           {showForm ? 'Close' : '+ Add restaurant'}
         </button>
@@ -68,41 +73,41 @@ export default function DashboardPage() {
             e.preventDefault();
             createRestaurant.mutate();
           }}
-          className="mb-6 space-y-2 rounded-xl border bg-white p-4"
+          className="mt-8 space-y-3 rounded-4xl border border-line bg-cream p-8"
         >
-          {error && <p className="rounded bg-red-50 p-2 text-sm text-red-600">{error}</p>}
+          {error && <p className="rounded-2xl bg-clay/10 px-4 py-3 text-sm text-clay">{error}</p>}
           <input
             placeholder="Restaurant name"
             required
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
           />
           <input
             placeholder="Address"
             required
             value={form.address}
             onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
           />
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <input
               placeholder="Latitude"
               value={form.lat}
               onChange={(e) => setForm((f) => ({ ...f, lat: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
             />
             <input
               placeholder="Longitude"
               value={form.lng}
               onChange={(e) => setForm((f) => ({ ...f, lng: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={createRestaurant.isPending}
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+            className="btn-pill bg-ink px-6 py-3 text-cream hover:bg-espresso disabled:opacity-60"
           >
             {createRestaurant.isPending ? 'Saving…' : 'Create restaurant'}
           </button>
@@ -110,11 +115,14 @@ export default function DashboardPage() {
       )}
 
       {!restaurants || restaurants.length === 0 ? (
-        <p className="py-12 text-center text-slate-400">
-          No restaurants yet. Add one to start posting surplus offers.
-        </p>
+        <div className="mt-12 rounded-4xl border border-line bg-cream p-16 text-center">
+          <p className="font-display text-2xl text-ink">No restaurants yet.</p>
+          <p className="mt-2 text-sm text-muted">
+            Add one to start posting surplus offers and tracking your impact.
+          </p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="mt-10 space-y-6">
           {restaurants.map((r) => (
             <RestaurantPanel key={r.id} restaurant={r} />
           ))}

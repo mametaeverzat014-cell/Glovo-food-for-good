@@ -9,11 +9,11 @@ import { formatPrice } from '@/lib/format';
 import { useAuth } from '@/store/auth';
 
 const STATUS_STYLES: Record<string, string> = {
-  RESERVED: 'bg-amber-100 text-amber-700',
-  PAID: 'bg-blue-100 text-blue-700',
-  PICKED_UP: 'bg-purple-100 text-purple-700',
-  COMPLETED: 'bg-green-100 text-green-700',
-  CANCELLED: 'bg-slate-200 text-slate-500',
+  RESERVED: 'bg-clay/15 text-clay',
+  PAID: 'bg-olive/15 text-olive',
+  PICKED_UP: 'bg-cocoa/15 text-cocoa',
+  COMPLETED: 'bg-olive text-cream',
+  CANCELLED: 'bg-sand text-muted',
 };
 
 export default function OrdersPage() {
@@ -37,49 +37,56 @@ export default function OrdersPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders'] }),
   });
 
-  if (isLoading) return <p className="py-12 text-center text-slate-400">Loading orders…</p>;
+  if (isLoading) return <p className="py-32 text-center text-muted">Loading orders…</p>;
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold">My Orders</h1>
+    <div className="mx-auto max-w-4xl px-6 py-16 lg:px-10">
+      <p className="eyebrow">Your rescues</p>
+      <h1 className="mt-3 font-display text-5xl font-medium tracking-tight text-ink">My orders</h1>
+
       {!orders || orders.length === 0 ? (
-        <p className="py-12 text-center text-slate-400">You have no orders yet.</p>
+        <div className="mt-12 rounded-4xl border border-line bg-cream p-16 text-center">
+          <p className="font-display text-2xl text-ink">No orders yet.</p>
+          <p className="mt-2 text-sm text-muted">Your reserved meals will appear here.</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="mt-10 space-y-4">
           {orders.map((order) => (
-            <div key={order.id} className="rounded-xl border bg-white p-4">
-              <div className="flex items-start justify-between">
+            <div key={order.id} className="rounded-3xl border border-line bg-cream p-6">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-semibold">{order.offer?.title}</h3>
-                  <p className="text-sm text-slate-500">{order.offer?.restaurant?.name}</p>
-                  <p className="text-sm text-slate-500">
+                  <h3 className="font-display text-xl font-medium text-ink">{order.offer?.title}</h3>
+                  <p className="mt-1 text-sm text-muted">{order.offer?.restaurant?.name}</p>
+                  <p className="mt-3 text-sm text-cocoa">
                     {order.quantity} × · {formatPrice(order.totalPrice)} · Code{' '}
-                    <span className="font-mono font-semibold text-slate-700">{order.pickupCode}</span>
+                    <span className="font-display font-semibold tracking-wide text-ink">
+                      {order.pickupCode}
+                    </span>
                   </p>
                 </div>
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    STATUS_STYLES[order.status] ?? 'bg-slate-100 text-slate-600'
+                  className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${
+                    STATUS_STYLES[order.status] ?? 'bg-sand text-muted'
                   }`}
                 >
                   {order.status}
                 </span>
               </div>
 
-              <div className="mt-3 flex gap-2">
+              <div className="mt-5 flex flex-wrap gap-3">
                 {order.status === 'RESERVED' && (
                   <>
                     <button
                       onClick={() => action.mutate({ id: order.id, verb: 'pay' })}
                       disabled={action.isPending}
-                      className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark"
+                      className="btn-pill bg-ink px-5 py-2 text-cream hover:bg-espresso"
                     >
                       Pay now
                     </button>
                     <button
                       onClick={() => action.mutate({ id: order.id, verb: 'cancel' })}
                       disabled={action.isPending}
-                      className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+                      className="btn-pill border border-line px-5 py-2 text-muted hover:border-clay hover:text-clay"
                     >
                       Cancel
                     </button>
@@ -89,14 +96,16 @@ export default function OrdersPage() {
                   <button
                     onClick={() => action.mutate({ id: order.id, verb: 'complete' })}
                     disabled={action.isPending}
-                    className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-dark"
+                    className="btn-pill bg-olive px-5 py-2 text-cream hover:opacity-90"
                   >
                     Confirm received
                   </button>
                 )}
                 {order.status === 'PAID' && (
-                  <p className="text-sm text-slate-500">
-                    Show code <span className="font-mono">{order.pickupCode}</span> at pickup.
+                  <p className="text-sm text-muted">
+                    Show code{' '}
+                    <span className="font-display font-semibold text-ink">{order.pickupCode}</span>{' '}
+                    at pickup.
                   </p>
                 )}
               </div>

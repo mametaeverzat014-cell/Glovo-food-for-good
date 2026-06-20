@@ -1,24 +1,36 @@
 import type { Metadata } from 'next';
+import { Fraunces, Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
 
 export const metadata: Metadata = {
-  title: 'FoodSave — Save food, save money',
+  title: 'FoodSave — Rescue the feast',
   description:
     'FoodSave helps restaurants, cafes and bakeries sell surplus food at 50–70% off, cutting waste and feeding people for less.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={`${fraunces.variable} ${inter.variable}`}>
+      <body className="min-h-screen bg-paper text-ink antialiased">
         <Providers>
           <Header />
-          <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-          <footer className="mt-12 border-t bg-white py-6 text-center text-sm text-slate-400">
-            FoodSave — fighting food waste in Kazakhstan 🇰🇿
-          </footer>
+          <main>{children}</main>
+          <Footer />
         </Providers>
       </body>
     </html>

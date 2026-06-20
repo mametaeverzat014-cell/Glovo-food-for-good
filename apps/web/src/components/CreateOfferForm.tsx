@@ -7,10 +7,13 @@ import type { FoodCategory, Offer } from '@/lib/types';
 
 const CATEGORIES: FoodCategory[] = ['MEALS', 'BAKERY', 'GROCERY', 'DESSERTS', 'DRINKS', 'OTHER'];
 
-/** Returns an ISO string N hours from now, trimmed to minutes. */
+/** Returns an ISO string N hours from now. */
 function isoFromNow(hours: number): string {
   return new Date(Date.now() + hours * 3600_000).toISOString();
 }
+
+const inputClass =
+  'w-full rounded-2xl border border-line bg-paper px-4 py-2.5 text-sm text-ink focus:border-taupe focus:outline-none';
 
 export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
   const queryClient = useQueryClient();
@@ -63,40 +66,40 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
         e.preventDefault();
         create.mutate();
       }}
-      className="space-y-2 rounded-lg border bg-slate-50 p-3"
+      className="space-y-2.5 rounded-3xl border border-line bg-paper/60 p-5"
     >
-      <h4 className="text-sm font-semibold text-slate-700">New surplus offer</h4>
-      {error && <p className="rounded bg-red-50 p-2 text-xs text-red-600">{error}</p>}
+      <p className="eyebrow">New surplus offer</p>
+      {error && <p className="rounded-xl bg-clay/10 px-3 py-2 text-xs text-clay">{error}</p>}
 
       <input
         placeholder="Title"
         required
         value={form.title}
         onChange={(e) => update('title', e.target.value)}
-        className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+        className={inputClass}
       />
       <input
         placeholder="Description (optional)"
         value={form.description}
         onChange={(e) => update('description', e.target.value)}
-        className="w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+        className={inputClass}
       />
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2.5">
         <input
           type="number"
-          placeholder="Original price ₸"
+          placeholder="Original ₸"
           required
           value={form.originalPrice}
           onChange={(e) => update('originalPrice', e.target.value)}
-          className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          className={inputClass}
         />
         <input
           type="number"
-          placeholder="Discounted price ₸"
+          placeholder="Discounted ₸"
           required
           value={form.discountedPrice}
           onChange={(e) => update('discountedPrice', e.target.value)}
-          className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          className={inputClass}
         />
         <input
           type="number"
@@ -105,12 +108,12 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
           required
           value={form.quantity}
           onChange={(e) => update('quantity', e.target.value)}
-          className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          className={inputClass}
         />
         <select
           value={form.category}
           onChange={(e) => update('category', e.target.value)}
-          className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          className={inputClass}
         >
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>
@@ -118,24 +121,24 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
             </option>
           ))}
         </select>
-        <label className="text-xs text-slate-500">
-          Pickup starts in (h)
+        <label className="text-[11px] uppercase tracking-wider text-muted">
+          Pickup in (h)
           <input
             type="number"
             min={0}
             value={form.pickupInHours}
             onChange={(e) => update('pickupInHours', e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className={`mt-1 ${inputClass}`}
           />
         </label>
-        <label className="text-xs text-slate-500">
-          Window length (h)
+        <label className="text-[11px] uppercase tracking-wider text-muted">
+          Window (h)
           <input
             type="number"
             min={1}
             value={form.windowHours}
             onChange={(e) => update('windowHours', e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className={`mt-1 ${inputClass}`}
           />
         </label>
       </div>
@@ -143,7 +146,7 @@ export function CreateOfferForm({ restaurantId }: { restaurantId: string }) {
       <button
         type="submit"
         disabled={create.isPending}
-        className="w-full rounded-md bg-brand py-1.5 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+        className="btn-pill w-full bg-ink py-2.5 text-cream hover:bg-espresso disabled:opacity-60"
       >
         {create.isPending ? 'Publishing…' : 'Publish offer'}
       </button>

@@ -5,6 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 import type { FeedFilters, FoodCategory, Offer } from '@/lib/types';
 import { OfferCard } from '@/components/OfferCard';
+import { Hero } from '@/components/Hero';
+import { ImpactBand } from '@/components/ImpactBand';
+import { HowItWorks } from '@/components/HowItWorks';
 
 const CATEGORIES: { value: FoodCategory; label: string }[] = [
   { value: 'MEALS', label: 'Meals' },
@@ -24,19 +27,15 @@ const SORTS = [
 export default function MarketplacePage() {
   const [filters, setFilters] = useState<FeedFilters>({ sort: 'discount' });
 
-  const { data: offers, isLoading } = useQuery({
+  const { data: offers, isLoading, isError } = useQuery({
     queryKey: ['offers', filters],
     queryFn: () =>
       apiFetch<Offer[]>('/offers', {
         auth: false,
         params: {
           category: filters.category,
-          maxPrice: filters.maxPrice,
           minDiscount: filters.minDiscount,
-          minRating: filters.minRating,
           sort: filters.sort,
-          lat: filters.lat,
-          lng: filters.lng,
         },
       }),
   });
@@ -45,71 +44,120 @@ export default function MarketplacePage() {
     setFilters((f) => ({ ...f, category: f.category === value ? undefined : value }));
 
   return (
-    <div>
-      <section className="mb-6 rounded-2xl bg-brand-light p-6">
-        <h1 className="text-2xl font-bold text-brand-dark">Rescue today&apos;s surplus food</h1>
-        <p className="mt-1 text-slate-600">
-          Great meals from local restaurants and bakeries at 50–70% off. Save money, save the planet.
-        </p>
+    <>
+      <Hero />
+
+      <section id="feed" className="bg-paper">
+        <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
+          <div className="flex flex-col justify-between gap-6 border-b border-line pb-8 sm:flex-row sm:items-end">
+            <div>
+              <p className="eyebrow">The marketplace</p>
+              <h2 className="mt-3 font-display text-4xl font-medium tracking-tight text-ink sm:text-5xl">
+                Today&apos;s rescues
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="eyebrow">Sort by</label>
+              <select
+                value={filters.sort}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, sort: e.target.value as FeedFilters['sort'] }))
+                }
+                className="rounded-full border border-line bg-cream px-4 py-2 text-sm text-ink focus:border-taupe focus:outline-none"
+              >
+                {SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="mt-8 flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setFilters((f) => ({ ...f, category: undefined }))}
+              className={`rounded-full border px-4 py-1.5 text-[13px] uppercase tracking-wider transition-colors ${
+                !filters.category
+                  ? 'border-ink bg-ink text-cream'
+                  : 'border-line bg-cream text-muted hover:border-taupe'
+              }`}
+            >
+              All
+            </button>
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.value}
+                onClick={() => toggleCategory(c.value)}
+                className={`rounded-full border px-4 py-1.5 text-[13px] uppercase tracking-wider transition-colors ${
+                  filters.category === c.value
+                    ? 'border-ink bg-ink text-cream'
+                    : 'border-line bg-cream text-muted hover:border-taupe'
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+
+            <div className="ml-auto flex items-center gap-2">
+              {[30, 50, 70].map((d) => (
+                <button
+                  key={d}
+                  onClick={() =>
+                    setFilters((f) => ({ ...f, minDiscount: f.minDiscount === d ? undefined : d }))
+                  }
+                  className={`rounded-full border px-4 py-1.5 text-[13px] transition-colors ${
+                    filters.minDiscount === d
+                      ? 'border-clay bg-clay text-cream'
+                      : 'border-line bg-cream text-muted hover:border-clay'
+                  }`}
+                >
+                  {d}%+ off
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Grid */}
+          <div className="mt-12">
+            {isLoading ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-[4/5] animate-pulse rounded-3xl border border-line bg-sand/40"
+                  />
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="rounded-4xl border border-line bg-cream p-16 text-center">
+                <p className="font-display text-2xl text-ink">We couldn&apos;t reach the kitchen.</p>
+                <p className="mt-2 text-sm text-muted">
+                  The marketplace is taking a moment — please try again shortly.
+                </p>
+              </div>
+            ) : !offers || offers.length === 0 ? (
+              <div className="rounded-4xl border border-line bg-cream p-16 text-center">
+                <p className="font-display text-3xl text-ink">No rescues match — yet.</p>
+                <p className="mt-2 text-sm text-muted">
+                  Adjust your filters, or check back this evening when kitchens post their surplus.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {offers.map((offer) => (
+                  <OfferCard key={offer.id} offer={offer} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </section>
 
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.value}
-            onClick={() => toggleCategory(c.value)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${
-              filters.category === c.value
-                ? 'border-brand bg-brand text-white'
-                : 'border-slate-300 bg-white text-slate-600 hover:border-brand'
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
-
-        <div className="ml-auto flex items-center gap-2">
-          <label className="text-sm text-slate-500">Sort</label>
-          <select
-            value={filters.sort}
-            onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value as FeedFilters['sort'] }))}
-            className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
-          >
-            {SORTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filters.minDiscount ?? ''}
-            onChange={(e) =>
-              setFilters((f) => ({
-                ...f,
-                minDiscount: e.target.value ? Number(e.target.value) : undefined,
-              }))
-            }
-            className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
-          >
-            <option value="">Any discount</option>
-            <option value="30">30%+ off</option>
-            <option value="50">50%+ off</option>
-            <option value="70">70%+ off</option>
-          </select>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <p className="py-12 text-center text-slate-400">Loading offers…</p>
-      ) : !offers || offers.length === 0 ? (
-        <p className="py-12 text-center text-slate-400">No offers match your filters right now.</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {offers.map((offer) => (
-            <OfferCard key={offer.id} offer={offer} />
-          ))}
-        </div>
-      )}
-    </div>
+      <ImpactBand />
+      <HowItWorks />
+    </>
   );
 }

@@ -1,56 +1,86 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/store/auth';
+
+const NAV = [
+  { href: '/', label: 'Marketplace' },
+  { href: '/#how', label: 'How it works' },
+  { href: '/#impact', label: 'Impact' },
+];
 
 export function Header() {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   return (
-    <header className="border-b bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold text-brand">
-          <span aria-hidden>🥗</span> FoodSave
+    <header className="sticky top-0 z-50 border-b border-line/70 bg-paper/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
+        <Link href="/" className="group flex items-baseline gap-2">
+          <span className="font-display text-2xl font-semibold tracking-tight text-ink">
+            FoodSave
+          </span>
+          <span className="hidden text-[10px] uppercase tracking-widest text-muted sm:inline">
+            est. 2026
+          </span>
         </Link>
 
-        <nav className="flex items-center gap-4 text-sm">
-          <Link href="/" className="text-slate-600 hover:text-brand">
-            Marketplace
-          </Link>
+        <nav className="hidden items-center gap-9 md:flex">
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`text-[13px] uppercase tracking-[0.14em] transition-colors hover:text-ink ${
+                pathname === item.href ? 'text-ink' : 'text-muted'
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
+        <div className="flex items-center gap-4 text-[13px]">
           {user ? (
             <>
               {(user.role === 'RESTAURANT_OWNER' || user.role === 'ADMIN') && (
-                <Link href="/dashboard" className="text-slate-600 hover:text-brand">
+                <Link
+                  href="/dashboard"
+                  className="hidden uppercase tracking-[0.14em] text-muted hover:text-ink sm:inline"
+                >
                   Dashboard
                 </Link>
               )}
-              <Link href="/orders" className="text-slate-600 hover:text-brand">
-                My Orders
+              <Link
+                href="/orders"
+                className="hidden uppercase tracking-[0.14em] text-muted hover:text-ink sm:inline"
+              >
+                Orders
               </Link>
-              <span className="hidden text-slate-400 sm:inline">·</span>
-              <span className="hidden text-slate-700 sm:inline">{user.name}</span>
               <button
                 onClick={logout}
-                className="rounded-md border border-slate-300 px-3 py-1 text-slate-600 hover:bg-slate-50"
+                className="btn-pill border border-ink/20 px-5 py-2 text-ink hover:bg-ink hover:text-cream"
               >
-                Logout
+                {user.name.split(' ')[0]} · Logout
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="text-slate-600 hover:text-brand">
+              <Link
+                href="/login"
+                className="uppercase tracking-[0.14em] text-muted hover:text-ink"
+              >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="rounded-md bg-brand px-3 py-1.5 font-medium text-white hover:bg-brand-dark"
+                className="btn-pill bg-ink px-5 py-2 text-cream hover:bg-espresso"
               >
-                Sign up
+                Get started
               </Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
