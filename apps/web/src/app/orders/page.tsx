@@ -2,11 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import type { Order } from '@/lib/types';
 import { formatPrice } from '@/lib/format';
 import { useAuth } from '@/store/auth';
+import { ReviewForm } from '@/components/ReviewForm';
 
 const STATUS_STYLES: Record<string, string> = {
   RESERVED: 'bg-clay/15 text-clay',
@@ -20,6 +21,8 @@ export default function OrdersPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, loading } = useAuth();
+  const [reviewingOrder, setReviewingOrder] = useState<string | null>(null);
+  const [reviewedRestaurants, setReviewedRestaurants] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!loading && !user) router.push('/login');
@@ -130,7 +133,34 @@ export default function OrdersPage() {
                     at pickup.
                   </p>
                 )}
+                {order.status === 'COMPLETED' &&
+                  order.offer?.restaurantId &&
+                  (reviewedRestaurants.has(order.offer.restaurantId) ? (
+                    <span className="text-sm text-olive">✓ Thanks for your review!</span>
+                  ) : reviewingOrder !== order.id ? (
+                    <button
+                      onClick={() => setReviewingOrder(order.id)}
+                      className="btn-pill border border-line px-5 py-2 text-ink hover:border-taupe"
+                    >
+                      ★ Leave a review
+                    </button>
+                  ) : null)}
               </div>
+
+              {order.status === 'COMPLETED' &&
+                reviewingOrder === order.id &&
+                order.offer?.restaurantId && (
+                  <ReviewForm
+                    restaurantId={order.offer.restaurantId}
+                    restaurantName={order.offer.restaurant?.name}
+                    onCancel={() => setReviewingOrder(null)}
+                    onDone={() => {
+                      const rid = order.offer!.restaurantId!;
+                      setReviewedRestaurants((prev) => new Set(prev).add(rid));
+                      setReviewingOrder(null);
+                    }}
+                  />
+                )}
             </div>
           ))}
         </div>
