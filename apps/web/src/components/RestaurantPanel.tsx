@@ -1,10 +1,13 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import type { Offer, Order, Restaurant } from '@/lib/types';
 import { formatPrice } from '@/lib/format';
 import { CreateOfferForm } from './CreateOfferForm';
+import { ImageUpload } from './ImageUpload';
+import { AddressAutocomplete, type GeoResult } from './AddressAutocomplete';
 
 const ACTIVE_STATUSES = ['RESERVED', 'PAID', 'PICKED_UP'];
 
@@ -16,8 +19,20 @@ const STATUS_STYLES: Record<string, string> = {
   CANCELLED: 'bg-sand text-muted',
 };
 
+const inputClass =
+  'w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none';
+
 export function RestaurantPanel({ restaurant }: { restaurant: Restaurant }) {
   const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [edit, setEdit] = useState({
+    name: restaurant.name,
+    description: restaurant.description ?? '',
+    imageUrl: restaurant.imageUrl ?? null,
+    address: restaurant.address,
+    lat: String(restaurant.lat),
+    lng: String(restaurant.lng),
+  });
 
   const { data: offers } = useQuery({
     queryKey: ['restaurant-offers', restaurant.id],
@@ -36,39 +51,128 @@ export function RestaurantPanel({ restaurant }: { restaurant: Restaurant }) {
       queryClient.invalidateQueries({ queryKey: ['restaurant-orders', restaurant.id] }),
   });
 
+  const save = useMutation({
+    mutationFn: () =>
+      apiFetch<Restaurant>(`/restaurants/${restaurant.id}`, {
+        method: 'PATCH',
+        body: {
+          name: edit.name,
+          description: edit.description || undefined,
+          imageUrl: edit.imageUrl ?? '',
+          address: edit.address,
+          lat: Number(edit.lat),
+          lng: Number(edit.lng),
+        },
+      }),
+    onSuccess: () => {
+      setEditing(false);
+      queryClient.invalidateQueries({ queryKey: ['my-restaurants'] });
+    },
+  });
+
+  const openEditor = () => {
+    setEdit({
+      name: restaurant.name,
+      description: restaurant.description ?? '',
+      imageUrl: restaurant.imageUrl ?? null,
+      address: restaurant.address,
+      lat: String(restaurant.lat),
+      lng: String(restaurant.lng),
+    });
+    setEditing(true);
+  };
+
+  const handleAddress = (r: GeoResult) =>
+    setEdit((e) => ({ ...e, address: r.label, lat: String(r.lat), lng: String(r.lng) }));
+
   const activeOrders = (orders ?? []).filter((o) => ACTIVE_STATUSES.includes(o.status));
 
   return (
     <div className="rounded-4xl border border-line bg-cream p-8">
-      <div className="mb-6 flex items-start justify-between gap-4 border-b border-line pb-6">
-        <div className="flex items-start gap-4">
-          {restaurant.imageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={restaurant.imageUrl}
-              alt={restaurant.name}
-              className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+      {editing ? (
+        <div className="mb-6 space-y-3 border-b border-line pb-6">
+          <p className="eyebrow">Edit restaurant</p>
+          <div className="max-w-xs">
+            <ImageUpload
+              value={edit.imageUrl}
+              onChange={(url) => setEdit((e) => ({ ...e, imageUrl: url }))}
+              label="Restaurant photo"
             />
-          )}
+          </div>
+          <input
+            value={edit.name}
+            onChange={(e) => setEdit((s) => ({ ...s, name: e.target.value }))}
+            placeholder="Restaurant name"
+            className={inputClass}
+          />
+          <input
+            value={edit.description}
+            onChange={(e) => setEdit((s) => ({ ...s, description: e.target.value }))}
+            placeholder="Short description (optional)"
+            className={inputClass}
+          />
           <div>
-          <h3 className="font-display text-2xl font-medium text-ink">{restaurant.name}</h3>
-          <p className="mt-1 text-sm text-muted">{restaurant.address}</p>
-          <span
-            className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[11px] uppercase tracking-wider ${
-              restaurant.verified ? 'bg-olive/15 text-olive' : 'bg-clay/15 text-clay'
-            }`}
-          >
-            {restaurant.verified ? '✓ Verified' : 'Pending verification'}
-          </span>
+            <AddressAutocomplete onSelect={handleAddress} placeholder="Search a new address…" />
+            <p className="mt-2 text-xs text-muted">
+              Current: <span className="text-cocoa">{edit.address}</span>
+            </p>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={() => save.mutate()}
+              disabled={save.isPending}
+              className="btn-pill bg-ink px-5 py-2 text-cream hover:bg-espresso disabled:opacity-60"
+            >
+              {save.isPending ? 'Saving…' : 'Save changes'}
+            </button>
+            <button
+              onClick={() => setEditing(false)}
+              className="btn-pill border border-line px-5 py-2 text-muted hover:border-taupe"
+            >
+              Cancel
+            </button>
+            {save.isError && <span className="self-center text-xs text-clay">Could not save</span>}
           </div>
         </div>
-        <div className="text-right">
-          <p className="font-display text-2xl font-semibold text-ink">
-            {restaurant.rating.toFixed(1)}
-          </p>
-          <p className="eyebrow">{restaurant.reviewCount} reviews</p>
+      ) : (
+        <div className="mb-6 flex items-start justify-between gap-4 border-b border-line pb-6">
+          <div className="flex items-start gap-4">
+            {restaurant.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={restaurant.imageUrl}
+                alt={restaurant.name}
+                className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+              />
+            )}
+            <div>
+              <h3 className="font-display text-2xl font-medium text-ink">{restaurant.name}</h3>
+              <p className="mt-1 text-sm text-muted">{restaurant.address}</p>
+              <span
+                className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[11px] uppercase tracking-wider ${
+                  restaurant.verified ? 'bg-olive/15 text-olive' : 'bg-clay/15 text-clay'
+                }`}
+              >
+                {restaurant.verified ? '✓ Verified' : 'Pending verification'}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <div className="text-right">
+              <p className="font-display text-2xl font-semibold text-ink">
+                {restaurant.rating.toFixed(1)}
+              </p>
+              <p className="eyebrow">{restaurant.reviewCount} reviews</p>
+            </div>
+            <button
+              onClick={openEditor}
+              className="rounded-full border border-line px-4 py-1.5 text-xs text-muted hover:border-taupe hover:text-ink"
+            >
+              Edit
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-2">
         <CreateOfferForm restaurantId={restaurant.id} />
