@@ -87,11 +87,21 @@ export class AiService {
         }),
       });
       if (!res.ok) {
-        throw new Error(`xAI responded ${res.status}`);
+        const body = await res.text().catch(() => '');
+        // eslint-disable-next-line no-console
+        console.error(`[ai] xAI ${res.status} (model="${model}"): ${body}`);
+        throw new ServiceUnavailableException(
+          `Grok error ${res.status} for model "${model}": ${(body || 'request failed').slice(0, 180)}`,
+        );
       }
       data = (await res.json()) as ChatResponse;
-    } catch {
-      throw new ServiceUnavailableException('The AI assistant is temporarily unavailable.');
+    } catch (err) {
+      if (err instanceof ServiceUnavailableException) {
+        throw err;
+      }
+      // eslint-disable-next-line no-console
+      console.error('[ai] xAI request failed', err);
+      throw new ServiceUnavailableException('Could not reach the AI provider (network error).');
     }
 
     const text = (data.choices?.[0]?.message?.content ?? '').trim();
