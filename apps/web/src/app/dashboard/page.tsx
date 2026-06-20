@@ -8,15 +8,19 @@ import type { Restaurant } from '@/lib/types';
 import { useAuth } from '@/store/auth';
 import { RestaurantPanel } from '@/components/RestaurantPanel';
 import { ImageUpload } from '@/components/ImageUpload';
+import { AddressAutocomplete, type GeoResult } from '@/components/AddressAutocomplete';
 
 export default function DashboardPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, loading } = useAuth();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', address: '', lat: '51.1283', lng: '71.4304' });
+  const [form, setForm] = useState({ name: '', address: '', lat: '', lng: '' });
   const [image, setImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleAddress = (r: GeoResult) =>
+    setForm((f) => ({ ...f, address: r.label, lat: String(r.lat), lng: String(r.lng) }));
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== 'RESTAURANT_OWNER' && user.role !== 'ADMIN'))) {
@@ -44,7 +48,7 @@ export default function DashboardPage() {
       }),
     onSuccess: () => {
       setShowForm(false);
-      setForm({ name: '', address: '', lat: '51.1283', lng: '71.4304' });
+      setForm({ name: '', address: '', lat: '', lng: '' });
       setImage(null);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['my-restaurants'] });
@@ -75,6 +79,10 @@ export default function DashboardPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            if (!form.lat || !form.lng) {
+              setError('Please pick an address from the suggestions so we can place it on the map.');
+              return;
+            }
             createRestaurant.mutate();
           }}
           className="mt-8 space-y-3 rounded-4xl border border-line bg-cream p-8"
@@ -90,26 +98,20 @@ export default function DashboardPage() {
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             className="w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
           />
-          <input
-            placeholder="Address"
-            required
-            value={form.address}
-            onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-            className="w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              placeholder="Latitude"
-              value={form.lat}
-              onChange={(e) => setForm((f) => ({ ...f, lat: e.target.value }))}
-              className="rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
+          <div>
+            <AddressAutocomplete
+              onSelect={handleAddress}
+              placeholder="Address — e.g. Кабанбай батыр 17, Астана"
             />
-            <input
-              placeholder="Longitude"
-              value={form.lng}
-              onChange={(e) => setForm((f) => ({ ...f, lng: e.target.value }))}
-              className="rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
-            />
+            {form.lat && form.lng ? (
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-olive">
+                <span>✓</span> Pinned: {form.address}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs text-muted">
+                Start typing your address and pick it from the suggestions.
+              </p>
+            )}
           </div>
           <button
             type="submit"

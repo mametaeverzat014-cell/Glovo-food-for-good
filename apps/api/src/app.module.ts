@@ -10,6 +10,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { GeocodingModule } from './geocoding/geocoding.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -25,6 +26,7 @@ import { HealthController } from './health.controller';
     FavoritesModule,
     NotificationsModule,
     UploadsModule,
+    GeocodingModule,
   ],
   controllers: [HealthController],
 })
