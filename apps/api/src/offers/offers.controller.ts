@@ -29,6 +29,12 @@ export class OffersController {
     return this.offers.feed(query);
   }
 
+  // Personalised feed for the logged-in customer.
+  @Get('recommended')
+  recommend(@CurrentUser() user: AuthUser) {
+    return this.offers.recommend(user.id);
+  }
+
   @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {

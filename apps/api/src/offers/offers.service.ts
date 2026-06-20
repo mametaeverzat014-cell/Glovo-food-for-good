@@ -128,6 +128,51 @@ export class OffersService {
     }
   }
 
+  /**
+   * Personalised "For you" recommendations: scores available offers by the
+   * user's favourite restaurants, previously ordered categories, discount and
+   * rating. New users still get sensible results (discount/rating driven).
+   */
+  async recommend(userId: string) {
+    const [orders, favorites] = await Promise.all([
+      this.prisma.order.findMany({
+        where: { userId },
+        select: { offer: { select: { category: true, restaurantId: true } } },
+        take: 50,
+      }),
+      this.prisma.favorite.findMany({ where: { userId }, select: { restaurantId: true } }),
+    ]);
+
+    const favRestaurants = new Set(favorites.map((f) => f.restaurantId));
+    const categoryScore: Record<string, number> = {};
+    for (const o of orders) {
+      categoryScore[o.offer.category] = (categoryScore[o.offer.category] ?? 0) + 1;
+      favRestaurants.add(o.offer.restaurantId); // ordered-from counts as a signal too
+    }
+
+    const offers = await this.prisma.offer.findMany({
+      where: { status: OfferStatus.AVAILABLE, quantity: { gt: 0 }, expiresAt: { gt: new Date() } },
+      include: {
+        restaurant: { select: { id: true, name: true, rating: true, imageUrl: true } },
+        _count: { select: { orders: true } },
+      },
+    });
+
+    const scored = offers.map((offer) => {
+      const withPct = withDiscount(offer);
+      let score = 0;
+      if (favRestaurants.has(offer.restaurantId)) score += 5;
+      score += (categoryScore[offer.category] ?? 0) * 2;
+      score += withPct.discountPercent / 20;
+      score += Number(offer.restaurant.rating);
+      score += offer._count.orders * 0.5;
+      return { ...withPct, orderCount: offer._count.orders, score };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 8);
+  }
+
   async findOne(id: string) {
     const offer = await this.prisma.offer.findUnique({
       where: { id },

@@ -2,7 +2,13 @@ import Link from 'next/link';
 import type { Offer } from '@/lib/types';
 import { categoryLabel, formatPickupWindow, formatPrice } from '@/lib/format';
 
-export function OfferCard({ offer }: { offer: Offer }) {
+interface Props {
+  offer: Offer;
+  isFavorite?: boolean;
+  onToggleFavorite?: (restaurantId: string) => void;
+}
+
+export function OfferCard({ offer, isFavorite, onToggleFavorite }: Props) {
   const image = offer.images?.[0] ?? offer.restaurant?.imageUrl;
 
   return (
@@ -25,6 +31,22 @@ export function OfferCard({ offer }: { offer: Offer }) {
           <span className="absolute left-4 top-4 rounded-full bg-cream/95 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cocoa">
             −{offer.discountPercent}%
           </span>
+          {onToggleFavorite && (
+            <button
+              type="button"
+              aria-label={isFavorite ? 'Remove from saved' : 'Save'}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite(offer.restaurantId);
+              }}
+              className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-cream/90 text-lg leading-none transition hover:scale-110 ${
+                isFavorite ? 'text-clay' : 'text-muted'
+              }`}
+            >
+              {isFavorite ? '♥' : '♡'}
+            </button>
+          )}
           <span className="absolute bottom-4 left-4 text-[11px] font-medium uppercase tracking-widest text-cream/90">
             {categoryLabel(offer.category)}
           </span>

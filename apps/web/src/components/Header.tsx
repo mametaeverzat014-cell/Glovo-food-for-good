@@ -52,6 +52,12 @@ export function Header() {
                 </Link>
               )}
               <Link
+                href="/saved"
+                className="hidden uppercase tracking-[0.14em] text-muted hover:text-ink sm:inline"
+              >
+                Saved
+              </Link>
+              <Link
                 href="/orders"
                 className="hidden uppercase tracking-[0.14em] text-muted hover:text-ink sm:inline"
               >

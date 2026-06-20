@@ -8,6 +8,8 @@ import { OfferCard } from '@/components/OfferCard';
 import { Hero } from '@/components/Hero';
 import { ImpactBand } from '@/components/ImpactBand';
 import { HowItWorks } from '@/components/HowItWorks';
+import { useAuth } from '@/store/auth';
+import { useFavorites } from '@/lib/useFavorites';
 
 const CATEGORIES: { value: FoodCategory; label: string }[] = [
   { value: 'MEALS', label: 'Meals' },
@@ -26,6 +28,8 @@ const SORTS = [
 
 export default function MarketplacePage() {
   const [filters, setFilters] = useState<FeedFilters>({ sort: 'discount' });
+  const { user } = useAuth();
+  const { enabled: favEnabled, favoriteIds, toggleFavorite } = useFavorites();
 
   const { data: offers, isLoading, isError } = useQuery({
     queryKey: ['offers', filters],
@@ -40,12 +44,43 @@ export default function MarketplacePage() {
       }),
   });
 
+  const { data: recommended } = useQuery({
+    queryKey: ['recommended'],
+    queryFn: () => apiFetch<Offer[]>('/offers/recommended'),
+    enabled: !!user,
+  });
+
+  const favProps = (offer: Offer) =>
+    favEnabled
+      ? { isFavorite: favoriteIds.has(offer.restaurantId), onToggleFavorite: toggleFavorite }
+      : {};
+
   const toggleCategory = (value: FoodCategory) =>
     setFilters((f) => ({ ...f, category: f.category === value ? undefined : value }));
 
   return (
     <>
       <Hero />
+
+      {user && recommended && recommended.length > 0 && (
+        <section className="border-b border-line bg-cream">
+          <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="eyebrow">Picked for you</p>
+                <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-ink sm:text-4xl">
+                  For you, {user.name.split(' ')[0]}
+                </h2>
+              </div>
+            </div>
+            <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {recommended.slice(0, 4).map((offer) => (
+                <OfferCard key={offer.id} offer={offer} {...favProps(offer)} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section id="feed" className="bg-paper">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
@@ -148,7 +183,7 @@ export default function MarketplacePage() {
             ) : (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {offers.map((offer) => (
-                  <OfferCard key={offer.id} offer={offer} />
+                  <OfferCard key={offer.id} offer={offer} {...favProps(offer)} />
                 ))}
               </div>
             )}
