@@ -79,6 +79,15 @@ export interface Order {
   user?: { name: string };
 }
 
+export interface Analytics {
+  mealsSaved: number;
+  moneyRecovered: number;
+  customerSavings: number;
+  co2AvoidedKg: number;
+  orders: number;
+  restaurants?: number;
+}
+
 export interface FeedFilters {
   category?: FoodCategory;
   maxPrice?: number;

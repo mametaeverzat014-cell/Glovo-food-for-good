@@ -21,3 +21,18 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function categoryLabel(category: string): string {
   return CATEGORY_LABELS[category] ?? category;
 }
+
+/** Compact number, e.g. 12000 -> "12K", 1500000 -> "1.5M". */
+export function formatCompact(value: number): string {
+  return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(
+    value,
+  );
+}
+
+/** CO₂ mass in kg, switching to tonnes once large. */
+export function formatCo2(kg: number): string {
+  if (kg >= 1000) {
+    return `${(kg / 1000).toFixed(1)} t`;
+  }
+  return `${Math.round(kg)} kg`;
+}

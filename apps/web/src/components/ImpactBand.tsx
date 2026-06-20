@@ -1,12 +1,32 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api';
+import type { Analytics } from '@/lib/types';
+import { formatCo2, formatCompact } from '@/lib/format';
 import { IMAGES } from '@/lib/images';
 
-const STATS = [
-  { value: '48', label: 'partner kitchens turning surplus into second servings.' },
-  { value: '12K', label: 'meals rescued from the bin and onto a plate.' },
-  { value: '2.4t', label: 'of CO₂ emissions quietly avoided this season.' },
-];
-
 export function ImpactBand() {
+  const { data } = useQuery({
+    queryKey: ['analytics', 'platform'],
+    queryFn: () => apiFetch<Analytics>('/analytics/platform', { auth: false }),
+  });
+
+  const stats = [
+    {
+      value: data ? String(data.restaurants ?? 0) : '—',
+      label: 'partner kitchens turning surplus into second servings.',
+    },
+    {
+      value: data ? formatCompact(data.mealsSaved) : '—',
+      label: 'meals rescued from the bin and onto a plate.',
+    },
+    {
+      value: data ? formatCo2(data.co2AvoidedKg) : '—',
+      label: 'of CO₂ emissions quietly avoided so far.',
+    },
+  ];
+
   return (
     <section id="impact" className="bg-paper">
       <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
@@ -34,11 +54,11 @@ export function ImpactBand() {
           </div>
 
           <div className="grid grid-rows-3 lg:col-span-4">
-            {STATS.map((s, i) => (
+            {stats.map((s, i) => (
               <div
-                key={s.value}
+                key={s.label}
                 className={`flex items-center justify-between gap-6 py-6 ${
-                  i !== STATS.length - 1 ? 'border-b border-line' : ''
+                  i !== stats.length - 1 ? 'border-b border-line' : ''
                 }`}
               >
                 <p className="max-w-[14rem] text-sm leading-relaxed text-muted">{s.label}</p>

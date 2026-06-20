@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/format';
 import { CreateOfferForm } from './CreateOfferForm';
 import { ImageUpload } from './ImageUpload';
 import { AddressAutocomplete, type GeoResult } from './AddressAutocomplete';
+import { RestaurantAnalytics } from './RestaurantAnalytics';
 
 const ACTIVE_STATUSES = ['RESERVED', 'PAID', 'PICKED_UP'];
 
@@ -173,6 +174,8 @@ export function RestaurantPanel({ restaurant }: { restaurant: Restaurant }) {
           </div>
         </div>
       )}
+
+      {!editing && <RestaurantAnalytics restaurantId={restaurant.id} />}
 
       <div className="grid gap-8 lg:grid-cols-2">
         <CreateOfferForm restaurantId={restaurant.id} />
