@@ -21,6 +21,12 @@ services:
       # Set this to your deployed Vercel URL, e.g. https://foodsave.vercel.app
       - key: CORS_ORIGINS
         sync: false
+      # Same Vercel URL — used for Stripe success/cancel redirects.
+      - key: WEB_URL
+        sync: false
+      # Stripe test secret key (sk_test_...) from dashboard.stripe.com/test/apikeys
+      - key: STRIPE_SECRET_KEY
+        sync: false
 
 databases:
   - name: foodsave-db

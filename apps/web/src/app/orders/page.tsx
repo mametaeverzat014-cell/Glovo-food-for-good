@@ -31,8 +31,30 @@ export default function OrdersPage() {
     enabled: !!user,
   });
 
+  // When Stripe redirects back with ?session_id=..., verify it and mark paid.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    if (!sessionId) return;
+    apiFetch('/orders/checkout/confirm', { method: 'POST', body: { sessionId } })
+      .catch(() => {})
+      .finally(() => {
+        window.history.replaceState({}, '', '/orders');
+        queryClient.invalidateQueries({ queryKey: ['orders'] });
+      });
+  }, [queryClient]);
+
+  // Redirect to Stripe Checkout for payment.
+  const checkout = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<{ url: string }>(`/orders/${id}/checkout`, { method: 'POST' }),
+    onSuccess: ({ url }) => {
+      if (url) window.location.href = url;
+    },
+  });
+
   const action = useMutation({
-    mutationFn: ({ id, verb }: { id: string; verb: 'pay' | 'complete' | 'cancel' }) =>
+    mutationFn: ({ id, verb }: { id: string; verb: 'complete' | 'cancel' }) =>
       apiFetch<Order>(`/orders/${id}/${verb}`, { method: 'POST' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders'] }),
   });
@@ -77,11 +99,11 @@ export default function OrdersPage() {
                 {order.status === 'RESERVED' && (
                   <>
                     <button
-                      onClick={() => action.mutate({ id: order.id, verb: 'pay' })}
-                      disabled={action.isPending}
+                      onClick={() => checkout.mutate(order.id)}
+                      disabled={checkout.isPending}
                       className="btn-pill bg-ink px-5 py-2 text-cream hover:bg-espresso"
                     >
-                      Pay now
+                      {checkout.isPending ? 'Redirecting…' : 'Pay now'}
                     </button>
                     <button
                       onClick={() => action.mutate({ id: order.id, verb: 'cancel' })}

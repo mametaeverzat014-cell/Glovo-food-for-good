@@ -27,6 +27,19 @@ export class OrdersController {
     return this.orders.reserve(user.id, dto);
   }
 
+  // Stripe Checkout: create a hosted payment session, returns { url }.
+  @Post(':id/checkout')
+  checkout(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.orders.createCheckout(id, user.id);
+  }
+
+  // Confirm a returned Checkout session and mark the order paid.
+  @Post('checkout/confirm')
+  confirmCheckout(@Body('sessionId') sessionId: string, @CurrentUser() user: AuthUser) {
+    return this.orders.confirmCheckout(sessionId, user.id);
+  }
+
+  // Legacy/manual mock payment (kept for testing without Stripe).
   @Post(':id/pay')
   pay(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.orders.pay(id, user.id);

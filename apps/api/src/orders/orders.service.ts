@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   NotificationType,
   OfferStatus,
@@ -12,6 +13,7 @@ import {
   Role,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { StripeService } from '../payments/stripe.service';
 import { CreateOrderDto } from './dto/order.dto';
 
 /** Generates a short human-readable pickup code (e.g. "FS-4827"). */
@@ -21,7 +23,89 @@ function pickupCode(): string {
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly stripe: StripeService,
+    private readonly config: ConfigService,
+  ) {}
+
+  private webUrl(): string {
+    const explicit = this.config.get<string>('WEB_URL');
+    if (explicit) return explicit.replace(/\/$/, '');
+    const cors = this.config.get<string>('CORS_ORIGINS');
+    return (cors?.split(',')[0] ?? 'http://localhost:3000').trim().replace(/\/$/, '');
+  }
+
+  /**
+   * Create a Stripe Checkout session for a reserved order and return its URL.
+   * The frontend redirects the customer to this hosted payment page.
+   */
+  async createCheckout(id: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: { offer: true },
+    });
+    if (!order || order.userId !== userId) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.status !== OrderStatus.RESERVED) {
+      throw new BadRequestException(`Cannot pay an order in status ${order.status}`);
+    }
+
+    const web = this.webUrl();
+    // KZT is a two-decimal currency for Stripe, so amounts are in tiyn (1/100).
+    const unitAmount = Math.round(Number(order.totalPrice) * 100);
+
+    const session = await this.stripe.client_.checkout.sessions.create({
+      mode: 'payment',
+      client_reference_id: order.id,
+      metadata: { orderId: order.id, userId },
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: 'kzt',
+            unit_amount: unitAmount,
+            product_data: { name: order.offer.title },
+          },
+        },
+      ],
+      success_url: `${web}/orders?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${web}/orders?checkout=cancel`,
+    });
+
+    return { url: session.url };
+  }
+
+  /**
+   * Verify a completed Checkout session with Stripe and mark the order paid.
+   * Idempotent: re-confirming an already-paid order is a no-op.
+   */
+  async confirmCheckout(sessionId: string, userId: string) {
+    const session = await this.stripe.client_.checkout.sessions.retrieve(sessionId);
+    const orderId = session.metadata?.orderId;
+    if (!orderId) {
+      throw new NotFoundException('Unknown payment session');
+    }
+
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.userId !== userId) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.status !== OrderStatus.RESERVED) {
+      return order; // already processed
+    }
+    if (session.payment_status !== 'paid') {
+      throw new BadRequestException('Payment was not completed');
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { id: order.id },
+      data: { status: OrderStatus.PAID, paymentStatus: PaymentStatus.PAID },
+    });
+    await this.notify(userId, NotificationType.ORDER_PAID, 'Payment received. See you at pickup!');
+    return updated;
+  }
 
   /**
    * Reserve an offer. Decrements stock atomically inside a transaction so that
