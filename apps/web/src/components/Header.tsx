@@ -51,6 +51,14 @@ export function Header() {
                   Dashboard
                 </Link>
               )}
+              {user.role === 'ADMIN' && (
+                <Link
+                  href="/inbox"
+                  className="hidden uppercase tracking-[0.14em] text-clay hover:text-cocoa sm:inline"
+                >
+                  Inbox
+                </Link>
+              )}
               <Link
                 href="/saved"
                 className="hidden uppercase tracking-[0.14em] text-muted hover:text-ink sm:inline"

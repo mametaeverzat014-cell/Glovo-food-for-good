@@ -28,6 +28,8 @@ export interface AuthResponse {
   user: User;
 }
 
+export type RestaurantStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
 export interface Restaurant {
   id: string;
   name: string;
@@ -36,10 +38,16 @@ export interface Restaurant {
   lat: number;
   lng: number;
   imageUrl?: string | null;
+  contactName?: string | null;
+  contactPhone?: string | null;
   rating: number;
   reviewCount: number;
   verified: boolean;
+  status: RestaurantStatus;
+  rejectionReason?: string | null;
   activeOffers?: number;
+  createdAt?: string;
+  owner?: { name: string; email: string; phone?: string | null };
   distanceKm?: number | null;
 }
 

@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { OfferStatus, Prisma, Role } from '@prisma/client';
+import { OfferStatus, Prisma, RestaurantStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { EventsGateway } from '../events/events.gateway';
 import { distanceKm } from '../common/geo';
@@ -38,6 +38,9 @@ export class OffersService {
     if (user.role !== Role.ADMIN && restaurant.ownerId !== user.id) {
       throw new ForbiddenException('You do not own this restaurant');
     }
+    if (user.role !== Role.ADMIN && restaurant.status !== RestaurantStatus.APPROVED) {
+      throw new ForbiddenException('Ресторан ещё не одобрен основателем — публиковать предложения нельзя.');
+    }
     if (dto.discountedPrice >= dto.originalPrice) {
       throw new BadRequestException('Discounted price must be lower than the original price');
     }
@@ -66,19 +69,23 @@ export class OffersService {
 
   /** Public marketplace feed with filters and sorting. */
   async feed(query: FeedQueryDto) {
+    const restaurantFilter: Prisma.RestaurantWhereInput = {
+      status: RestaurantStatus.APPROVED,
+    };
+    if (query.minRating != null) {
+      restaurantFilter.rating = { gte: query.minRating };
+    }
     const where: Prisma.OfferWhereInput = {
       status: OfferStatus.AVAILABLE,
       quantity: { gt: 0 },
       expiresAt: { gt: new Date() },
+      restaurant: restaurantFilter,
     };
     if (query.category) {
       where.category = query.category;
     }
     if (query.maxPrice != null) {
       where.discountedPrice = { lte: query.maxPrice };
-    }
-    if (query.minRating != null) {
-      where.restaurant = { rating: { gte: query.minRating } };
     }
 
     const offers = await this.prisma.offer.findMany({
@@ -156,7 +163,12 @@ export class OffersService {
     }
 
     const offers = await this.prisma.offer.findMany({
-      where: { status: OfferStatus.AVAILABLE, quantity: { gt: 0 }, expiresAt: { gt: new Date() } },
+      where: {
+        status: OfferStatus.AVAILABLE,
+        quantity: { gt: 0 },
+        expiresAt: { gt: new Date() },
+        restaurant: { status: RestaurantStatus.APPROVED },
+      },
       include: {
         restaurant: { select: { id: true, name: true, rating: true, imageUrl: true } },
         _count: { select: { orders: true } },

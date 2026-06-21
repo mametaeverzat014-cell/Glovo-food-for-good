@@ -14,7 +14,11 @@ import { AuthUser, CurrentUser } from '../auth/current-user.decorator';
 import { Public } from '../auth/public.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
-import { CreateRestaurantDto, UpdateRestaurantDto } from './dto/restaurant.dto';
+import {
+  CreateRestaurantDto,
+  RejectRestaurantDto,
+  UpdateRestaurantDto,
+} from './dto/restaurant.dto';
 import { RestaurantsService } from './restaurants.service';
 
 @Controller('restaurants')
@@ -35,6 +39,13 @@ export class RestaurantsController {
   @Roles(Role.RESTAURANT_OWNER, Role.ADMIN)
   findMine(@CurrentUser() user: AuthUser) {
     return this.restaurants.findMine(user.id);
+  }
+
+  // Founder inbox: pending applications awaiting review.
+  @Get('pending')
+  @Roles(Role.ADMIN)
+  findPending() {
+    return this.restaurants.findPending();
   }
 
   @Public()
@@ -59,11 +70,17 @@ export class RestaurantsController {
     return this.restaurants.update(id, user, dto);
   }
 
-  // Admin verification workflow.
-  @Patch(':id/verify')
+  // Founder approval workflow.
+  @Patch(':id/approve')
   @Roles(Role.ADMIN)
-  verify(@Param('id') id: string) {
-    return this.restaurants.verify(id);
+  approve(@Param('id') id: string) {
+    return this.restaurants.approve(id);
+  }
+
+  @Patch(':id/reject')
+  @Roles(Role.ADMIN)
+  reject(@Param('id') id: string, @Body() dto: RejectRestaurantDto) {
+    return this.restaurants.reject(id, dto.reason);
   }
 
   @Delete(':id')

@@ -151,10 +151,18 @@ export function RestaurantPanel({ restaurant }: { restaurant: Restaurant }) {
               <p className="mt-1 text-sm text-muted">{restaurant.address}</p>
               <span
                 className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[11px] uppercase tracking-wider ${
-                  restaurant.verified ? 'bg-olive/15 text-olive' : 'bg-clay/15 text-clay'
+                  restaurant.status === 'APPROVED'
+                    ? 'bg-olive/15 text-olive'
+                    : restaurant.status === 'REJECTED'
+                      ? 'bg-clay/15 text-clay'
+                      : 'bg-amber-100 text-amber-700'
                 }`}
               >
-                {restaurant.verified ? '✓ Verified' : 'Pending verification'}
+                {restaurant.status === 'APPROVED'
+                  ? '✓ Approved'
+                  : restaurant.status === 'REJECTED'
+                    ? 'Rejected'
+                    : 'Pending review'}
               </span>
             </div>
           </div>
@@ -175,10 +183,45 @@ export function RestaurantPanel({ restaurant }: { restaurant: Restaurant }) {
         </div>
       )}
 
-      {!editing && <RestaurantAnalytics restaurantId={restaurant.id} />}
+      {restaurant.status !== 'APPROVED' && (
+        <div
+          className={`mb-6 rounded-3xl border p-5 text-sm ${
+            restaurant.status === 'REJECTED'
+              ? 'border-clay/30 bg-clay/5 text-clay'
+              : 'border-amber-200 bg-amber-50 text-amber-800'
+          }`}
+        >
+          {restaurant.status === 'REJECTED' ? (
+            <>
+              <p className="font-medium">Application rejected.</p>
+              {restaurant.rejectionReason && (
+                <p className="mt-1">Reason: {restaurant.rejectionReason}</p>
+              )}
+              <p className="mt-1">You can edit the details and they will be reviewed again.</p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium">⏳ Awaiting founder approval.</p>
+              <p className="mt-1">
+                You&apos;ll be able to publish offers once your application is approved.
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
+      {!editing && restaurant.status === 'APPROVED' && (
+        <RestaurantAnalytics restaurantId={restaurant.id} />
+      )}
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <CreateOfferForm restaurantId={restaurant.id} />
+        {restaurant.status === 'APPROVED' ? (
+          <CreateOfferForm restaurantId={restaurant.id} />
+        ) : (
+          <div className="rounded-3xl border border-dashed border-line bg-paper/60 p-5 text-sm text-muted">
+            Offer publishing unlocks after approval.
+          </div>
+        )}
 
         <div>
           <p className="eyebrow mb-4">Active offers</p>

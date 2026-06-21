@@ -15,7 +15,15 @@ export default function DashboardPage() {
   const queryClient = useQueryClient();
   const { user, loading } = useAuth();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', address: '', lat: '', lng: '' });
+  const [form, setForm] = useState({
+    name: '',
+    description: '',
+    address: '',
+    lat: '',
+    lng: '',
+    contactName: '',
+    contactPhone: '',
+  });
   const [image, setImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,20 +48,23 @@ export default function DashboardPage() {
         method: 'POST',
         body: {
           name: form.name,
+          description: form.description || undefined,
           address: form.address,
           lat: Number(form.lat),
           lng: Number(form.lng),
           imageUrl: image ?? undefined,
+          contactName: form.contactName || undefined,
+          contactPhone: form.contactPhone || undefined,
         },
       }),
     onSuccess: () => {
       setShowForm(false);
-      setForm({ name: '', address: '', lat: '', lng: '' });
+      setForm({ name: '', description: '', address: '', lat: '', lng: '', contactName: '', contactPhone: '' });
       setImage(null);
       setError(null);
       queryClient.invalidateQueries({ queryKey: ['my-restaurants'] });
     },
-    onError: (e) => setError(e instanceof Error ? e.message : 'Could not create restaurant'),
+    onError: (e) => setError(e instanceof Error ? e.message : 'Could not submit application'),
   });
 
   if (isLoading) return <p className="py-32 text-center text-muted">Loading dashboard…</p>;
@@ -71,7 +82,7 @@ export default function DashboardPage() {
           onClick={() => setShowForm((s) => !s)}
           className="btn-pill bg-ink px-6 py-3 text-cream hover:bg-espresso"
         >
-          {showForm ? 'Close' : '+ Add restaurant'}
+          {showForm ? 'Close' : '+ New application'}
         </button>
       </div>
 
@@ -87,6 +98,11 @@ export default function DashboardPage() {
           }}
           className="mt-8 space-y-3 rounded-4xl border border-line bg-cream p-8"
         >
+          <p className="eyebrow">Restaurant application</p>
+          <p className="text-sm text-muted">
+            Tell us about your restaurant. The FoodSave founder reviews every application before it
+            goes live.
+          </p>
           {error && <p className="rounded-2xl bg-clay/10 px-4 py-3 text-sm text-clay">{error}</p>}
           <div className="max-w-xs">
             <ImageUpload value={image} onChange={setImage} label="Restaurant photo" />
@@ -96,6 +112,13 @@ export default function DashboardPage() {
             required
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            className="w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
+          />
+          <textarea
+            placeholder="Short description of your restaurant — cuisine, what surplus you usually have…"
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            rows={3}
             className="w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
           />
           <div>
@@ -113,12 +136,26 @@ export default function DashboardPage() {
               </p>
             )}
           </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <input
+              placeholder="Owner / contact name"
+              value={form.contactName}
+              onChange={(e) => setForm((f) => ({ ...f, contactName: e.target.value }))}
+              className="w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
+            />
+            <input
+              placeholder="Contact phone — e.g. +77011234567"
+              value={form.contactPhone}
+              onChange={(e) => setForm((f) => ({ ...f, contactPhone: e.target.value }))}
+              className="w-full rounded-2xl border border-line bg-paper px-4 py-3 text-ink focus:border-taupe focus:outline-none"
+            />
+          </div>
           <button
             type="submit"
             disabled={createRestaurant.isPending}
             className="btn-pill bg-ink px-6 py-3 text-cream hover:bg-espresso disabled:opacity-60"
           >
-            {createRestaurant.isPending ? 'Saving…' : 'Create restaurant'}
+            {createRestaurant.isPending ? 'Submitting…' : 'Submit application'}
           </button>
         </form>
       )}

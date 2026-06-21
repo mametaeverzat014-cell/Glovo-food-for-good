@@ -52,7 +52,16 @@ enum NotificationType {
   PICKUP_READY
   ORDER_COMPLETED
   NEW_OFFER_NEARBY
+  RESTAURANT_APPROVED
+  RESTAURANT_REJECTED
   SYSTEM
+}
+
+// Founder approval workflow for restaurant applications.
+enum RestaurantStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model User {
@@ -85,11 +94,15 @@ model Restaurant {
   lat         Float
   lng         Float
   imageUrl    String?
-  rating      Float      @default(0)
-  reviewCount Int        @default(0)
-  verified    Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  contactName  String?
+  contactPhone String?
+  rating      Float            @default(0)
+  reviewCount Int              @default(0)
+  verified    Boolean          @default(false)
+  status      RestaurantStatus @default(PENDING)
+  rejectionReason String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   offers      Offer[]
   reviews     Review[]
@@ -97,6 +110,7 @@ model Restaurant {
 
   @@index([ownerId])
   @@index([lat, lng])
+  @@index([status])
 }
 
 model Offer {

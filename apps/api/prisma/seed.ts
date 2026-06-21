@@ -52,6 +52,7 @@ async function main() {
       lat: 51.1283,
       lng: 71.4304,
       verified: true,
+      status: 'APPROVED',
       imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800',
     },
   });
@@ -65,6 +66,7 @@ async function main() {
       lat: 51.0909,
       lng: 71.4187,
       verified: true,
+      status: 'APPROVED',
       imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800',
     },
   });

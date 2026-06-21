@@ -31,6 +31,20 @@ export class CreateRestaurantDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  contactName?: string;
+
+  @IsOptional()
+  @IsString()
+  contactPhone?: string;
+}
+
+export class RejectRestaurantDto {
+  @IsOptional()
+  @IsString()
+  reason?: string;
 }
 
 export class UpdateRestaurantDto {
@@ -61,4 +75,12 @@ export class UpdateRestaurantDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  contactName?: string;
+
+  @IsOptional()
+  @IsString()
+  contactPhone?: string;
 }
