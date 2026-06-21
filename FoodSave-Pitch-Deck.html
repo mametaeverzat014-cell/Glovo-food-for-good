@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FoodSave — Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#F3ECE0; --cream:#FAF6EE; --sand:#E7DAC5; --ink:#211A14;
+    --espresso:#2C2219; --cocoa:#3D2F22; --clay:#B26A41; --olive:#4C5A40;
+    --muted:#8C7C6A; --line:#D9CDBA;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#2a2119;color:var(--ink);font-family:Inter,system-ui,sans-serif}
+  .display{font-family:Fraunces,Georgia,serif}
+  .eyebrow{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .deck{display:flex;flex-direction:column;align-items:center;gap:24px;padding:32px 12px}
+  .slide{
+    width:1120px;max-width:100%;aspect-ratio:16/9;background:var(--paper);
+    border-radius:22px;overflow:hidden;position:relative;
+    box-shadow:0 30px 80px -40px rgba(0,0,0,.7);display:flex;flex-direction:column;
+    padding:64px 72px;
+  }
+  .slide.dark{background:var(--espresso);color:var(--cream)}
+  .slide.dark .eyebrow{color:#cdbfa9}
+  .slide.dark .muted{color:#cdbfa9}
+  .muted{color:var(--muted)}
+  h1{font-size:84px;line-height:.95;font-weight:600;letter-spacing:-.02em}
+  h2{font-size:52px;line-height:1.02;font-weight:600;letter-spacing:-.01em;margin-top:14px}
+  h3{font-size:24px;font-weight:600}
+  p.lead{font-size:22px;line-height:1.5;max-width:46ch;margin-top:18px}
+  .spacer{flex:1}
+  .footer{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+  .grid{display:grid;gap:18px;margin-top:30px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--cream);border:1px solid var(--line);border-radius:18px;padding:22px}
+  .slide.dark .card{background:#3a2e22;border-color:#4a3a2b}
+  .card h3{font-size:20px}
+  .card p{font-size:15px;line-height:1.5;color:var(--muted);margin-top:8px}
+  .slide.dark .card p{color:#cdbfa9}
+  .num{font-family:Fraunces,serif;font-size:64px;font-weight:600}
+  .pill{display:inline-block;background:var(--clay);color:#fff;border-radius:999px;padding:4px 14px;font-size:13px;font-weight:600}
+  .pill.olive{background:var(--olive)}
+  ul.clean{list-style:none;margin-top:24px;display:flex;flex-direction:column;gap:16px}
+  ul.clean li{font-size:21px;line-height:1.4;padding-left:34px;position:relative}
+  ul.clean li::before{content:"→";position:absolute;left:0;color:var(--clay);font-family:Fraunces,serif}
+  .big-italic{font-style:italic;color:var(--clay)}
+  .stat .num{color:var(--ink)}
+  .slide.dark .stat .num{color:var(--cream)}
+  @media print{
+    @page{size:1120px 630px;margin:0}
+    html,body{background:#fff}
+    .deck{padding:0;gap:0}
+    .slide{border-radius:0;box-shadow:none;page-break-after:always;width:1120px;height:630px;aspect-ratio:auto}
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1. TITLE -->
+  <section class="slide dark">
+    <span class="eyebrow">FoodSave · 2026 · Astana</span>
+    <div class="spacer"></div>
+    <h1>Rescue the<br><span class="big-italic">feast.</span></h1>
+    <p class="lead">A marketplace that helps restaurants, bakeries and supermarkets sell their unsold food at 50–70% off — feeding people for less and keeping good food out of landfill.</p>
+    <div class="spacer"></div>
+    <div class="footer"><span>glovofoodforgood.vercel.app</span><span>Pitch deck</span></div>
+  </section>
+
+  <!-- 2. PROBLEM -->
+  <section class="slide">
+    <span class="eyebrow">The problem</span>
+    <h2>A third of all food is wasted —<br>while it's still perfectly good.</h2>
+    <div class="grid g3">
+      <div class="card stat"><div class="num">1/3</div><p>of food produced globally is thrown away every year.</p></div>
+      <div class="card stat"><div class="num">~$1T</div><p>of value lost annually to food waste worldwide.</p></div>
+      <div class="card stat"><div class="num">8–10%</div><p>of global greenhouse-gas emissions come from food waste.</p></div>
+    </div>
+    <div class="spacer"></div>
+    <p class="muted">Restaurants and bakeries bin unsold meals every single night. Customers want quality food for less. Nobody connects them — especially in Central Asia.</p>
+  </section>
+
+  <!-- 3. SOLUTION -->
+  <section class="slide dark">
+    <span class="eyebrow">The solution</span>
+    <h2>Surplus food, beautifully<br>matched to hungry neighbours.</h2>
+    <ul class="clean">
+      <li>Kitchens list end-of-day surplus in seconds.</li>
+      <li>Customers discover discounted meals nearby on a live map.</li>
+      <li>Reserve, pay online, collect with a QR code — zero waste.</li>
+    </ul>
+    <div class="spacer"></div>
+    <p class="muted">Good food was never meant for the bin. We make rescuing it effortless — and rewarding for everyone.</p>
+  </section>
+
+  <!-- 4. HOW IT WORKS -->
+  <section class="slide">
+    <span class="eyebrow">How it works</span>
+    <h2>From kitchen surplus to your<br>table in under a minute.</h2>
+    <div class="grid g3">
+      <div class="card"><span class="pill">01</span><h3 style="margin-top:14px">Discover</h3><p>Browse surprise bags & discounted dishes from kitchens nearby, updated live.</p></div>
+      <div class="card"><span class="pill">02</span><h3 style="margin-top:14px">Reserve & pay</h3><p>Lock it in seconds with online payment. Real-time stock — what you see is what's left.</p></div>
+      <div class="card"><span class="pill">03</span><h3 style="margin-top:14px">Collect</h3><p>Show your QR pickup code, grab your food, enjoy a meal that would have been wasted.</p></div>
+    </div>
+  </section>
+
+  <!-- 5. PRODUCT -->
+  <section class="slide">
+    <span class="eyebrow">The product · live MVP</span>
+    <h2>A full platform, already shipped.</h2>
+    <div class="grid g4">
+      <div class="card"><h3>AI listings & pricing</h3><p>Auto-writes appetising descriptions & suggests the optimal 30/50/70% discount.</p></div>
+      <div class="card"><h3>Live inventory</h3><p>WebSocket stock updates across all users — no overselling.</p></div>
+      <div class="card"><h3>Map discovery</h3><p>Geocoded hyperlocal search + personalised "For you" feed.</p></div>
+      <div class="card"><h3>Payments & QR</h3><p>Online checkout (Stripe / Kaspi-ready) and QR pickup codes.</p></div>
+      <div class="card"><h3>Impact analytics</h3><p>Meals saved, money recovered, CO₂ avoided per partner.</p></div>
+      <div class="card"><h3>Reviews & ratings</h3><p>Verified-buyer reviews build trust and quality.</p></div>
+      <div class="card"><h3>Vetted onboarding</h3><p>Every restaurant is reviewed before going live.</p></div>
+      <div class="card"><h3>Web + mobile-ready</h3><p>Next.js front end, NestJS API, live in production.</p></div>
+    </div>
+  </section>
+
+  <!-- 6. MARKET -->
+  <section class="slide dark">
+    <span class="eyebrow">Market</span>
+    <h2>A first-mover in Central Asia.</h2>
+    <div class="grid g3">
+      <div class="card stat"><div class="num">$2.3B+</div><p>Kazakhstan food-service market, growing double digits.</p></div>
+      <div class="card stat"><div class="num">50K</div><p>restaurants, cafés & bakeries — our supply side.</p></div>
+      <div class="card stat"><div class="num">0</div><p>global surplus-food players (Too Good To Go etc.) operate here yet.</p></div>
+    </div>
+    <div class="spacer"></div>
+    <p class="muted">Phase 1: Astana & Almaty → Phase 2: Shymkent, Karaganda → Phase 3: all of Central Asia → Phase 4: grocery, hotels, university canteens.</p>
+  </section>
+
+  <!-- 7. BUSINESS MODEL -->
+  <section class="slide">
+    <span class="eyebrow">Business model</span>
+    <h2>Three revenue streams, asset-light.</h2>
+    <div class="grid g3">
+      <div class="card"><span class="pill olive">Core</span><h3 style="margin-top:14px">10–15% commission</h3><p>on every order — pure marketplace economics, zero inventory risk.</p></div>
+      <div class="card"><span class="pill olive">Recurring</span><h3 style="margin-top:14px">Premium subscription</h3><p>advanced analytics, AI pricing & priority placement for restaurants.</p></div>
+      <div class="card"><span class="pill olive">Ads</span><h3 style="margin-top:14px">Featured listings</h3><p>restaurants pay to appear first in the feed and on the map.</p></div>
+    </div>
+    <div class="spacer"></div>
+    <p class="muted">Every order is profitable margin — we never hold stock and never touch the food.</p>
+  </section>
+
+  <!-- 8. TRACTION / WHY NOW -->
+  <section class="slide dark">
+    <span class="eyebrow">Why now</span>
+    <h2>Built, live, and ready to scale.</h2>
+    <ul class="clean">
+      <li>Working product in production — discovery, payments, QR pickup, analytics.</li>
+      <li>AI + real-time inventory baked in from day one, not bolted on later.</li>
+      <li>Rising eco-awareness + tightening margins make this a must-have for kitchens.</li>
+      <li>No incumbent in Kazakhstan — a clear land-grab window.</li>
+    </ul>
+  </section>
+
+  <!-- 9. ASK -->
+  <section class="slide">
+    <span class="eyebrow">The ask</span>
+    <h2>Pre-seed to win the<br>Kazakhstan market.</h2>
+    <p class="lead">We're raising a pre-seed round to onboard the first hundreds of restaurants in Astana & Almaty, integrate Kaspi/Halyk payments, and prove unit economics — then expand across Central Asia.</p>
+    <div class="spacer"></div>
+    <div class="footer">
+      <span class="display" style="font-size:28px;color:var(--ink)">FoodSave</span>
+      <span>glovofoodforgood.vercel.app · Astana, Kazakhstan</span>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
